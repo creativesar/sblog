@@ -1,27 +1,28 @@
 import Image from "next/image";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
-import { PortableText } from "@portabletext/react";
+import { PortableText, PortableTextBlock } from "@portabletext/react";
 import { components } from "@/components/CustomComponents";
 import Comments from "@/components/Comments";
 
-export const revalidate = 60; //seconds
+export const revalidate = 60; // seconds
 
+// Fetch slugs for static paths generation
 export async function generateStaticParams() {
   const query = `*[_type=='post']{
     "slug":slug.current
   }`;
-  const slugs = await client.fetch(query);
-  const slugRoutes = slugs.map((item: { slug: string }) => item.slug);
-  return slugRoutes.map((slug: string) => ({ slug }));
+  const slugs: { slug: string }[] = await client.fetch(query);
+  const slugRoutes = slugs.map((item) => item.slug);
+  return slugRoutes.map((slug) => ({ slug }));
 }
 
-// To create static pages for dynamic routes
+// Define Post interface for strong typing
 interface Post {
   title: string;
   summary: string;
   image: string;
-  content: any;
+  content: PortableTextBlock[]; // Use appropriate type for PortableText
   author: {
     bio: string;
     image: string;
@@ -30,12 +31,14 @@ interface Post {
 }
 
 export default async function page({ params: { slug } }: { params: { slug: string } }) {
+  // Fetch the post based on the slug
   const query = `*[_type=='post' && slug.current=="${slug}"]{
-    title,summary,image,content,
-      author->{bio,image,name}
+    title, summary, image, content,
+    author->{bio, image, name}
   }[0]`;
-  const post: Post = await client.fetch(query);
+  const post: Post = await client.fetch<Post>(query);
 
+  // Helper function to resolve image URLs
   function urlForImage(image: string): string {
     return image ? urlFor(image).url() : "/placeholder.jpg";
   }
