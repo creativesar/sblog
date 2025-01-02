@@ -2,8 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { urlFor } from "@/sanity/lib/image";
 
+interface Post {
+  image: string;
+  title: string;
+  summary: string;
+  slug: string;
+}
+
 export default function BlogCard({ post }: { post: Post }) {
-  function urlForImage(image: any): string {
+  function urlForImage(image: string): string {
     return urlFor(image).url();
   }
 

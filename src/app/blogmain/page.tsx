@@ -13,10 +13,10 @@ export default async function BlogMain() {
     summary: string;
     title: string;
     image: string;
-    content: string;
+    content: any;
     author: {
       bio: string;
-      image: any;
+      image: string;
       name: string;
     };
     slug: string;

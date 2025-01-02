@@ -17,14 +17,26 @@ export async function generateStaticParams() {
 }
 
 // To create static pages for dynamic routes
+interface Post {
+  title: string;
+  summary: string;
+  image: string;
+  content: any;
+  author: {
+    bio: string;
+    image: string;
+    name: string;
+  };
+}
+
 export default async function page({ params: { slug } }: { params: { slug: string } }) {
   const query = `*[_type=='post' && slug.current=="${slug}"]{
     title,summary,image,content,
       author->{bio,image,name}
   }[0]`;
-  const post = await client.fetch(query);
+  const post: Post = await client.fetch(query);
 
-  function urlForImage(image: any): string {
+  function urlForImage(image: string): string {
     return image ? urlFor(image).url() : "/placeholder.jpg";
   }
 
