@@ -12,8 +12,14 @@ export async function generateStaticParams() {
     "slug":slug.current
   }`;
   const slugs = await client.fetch(query);
-  const slugRoutes = slugs.map((item: { slug: string }) => item.slug);
-  return slugRoutes.map((slug: string) => ({ slug }));
+  const slugRoutes = slugs.map((item:{slug:string})=>(
+    item.slug
+  ));
+  // console.log(slugRoutes)
+  return slugRoutes.map((slug:string)=>(
+    {slug}
+  ))
+  
 }
 
 // To create static pages for dynamic routes
@@ -21,7 +27,7 @@ interface Post {
   title: string;
   summary: string;
   image: string;
-  content: any;
+  content: string;
   author: {
     bio: string;
     image: string;
