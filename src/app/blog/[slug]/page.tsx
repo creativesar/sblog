@@ -40,7 +40,6 @@ export async function generateStaticParams(): Promise<{ params: { slug: string }
     slug: post.slug.current,
   })) };
 
-  return params;
 }
 
 // Fetch and render a single post based on the slug
