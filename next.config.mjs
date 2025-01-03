@@ -12,10 +12,12 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'readymadeui.com', // Add this line
+        hostname: 'readymadeui.com',
       },
     ],
+    unoptimized: true,  // Disable image optimization
   },
+  output: 'export', // For static export
 };
 
 export default nextConfig;
