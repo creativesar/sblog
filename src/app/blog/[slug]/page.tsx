@@ -4,8 +4,6 @@ import { urlFor } from "@/sanity/lib/image";
 import { PortableText } from "@portabletext/react";
 import Comments from "@/components/Comments";
 
-export const revalidate = 60; // ISR with 60 seconds revalidation
-
 // Type Definitions
 interface Author {
   bio: string;
@@ -13,13 +11,7 @@ interface Author {
   name: string;
 }
 
-interface Post {
-  title: string;
-  summary: string;
-  image: string;
-  content: string;
-  author: Author;
-}
+export const revalidate = 60; // ISR with 60 seconds revalidation
 
 export async function generateStaticParams() {
   const query = `*[_type == "post" && defined(slug.current)]{ slug }`;
