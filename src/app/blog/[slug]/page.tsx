@@ -1,10 +1,10 @@
 import Image from "next/image";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
-import { PortableText, PortableTextBlock } from "@portabletext/react"; // Import the type for PortableText content
+import { PortableText, PortableTextBlock } from "@portabletext/react";
 import Comments from "@/components/Comments";
 
-export const revalidate = 60; // seconds
+export const revalidate = 60; // Enable ISR with 60 seconds revalidation
 
 // Define types for fetched data
 interface Author {
@@ -17,8 +17,26 @@ interface Post {
   title: string;
   summary: string;
   image: string;
-  content: PortableTextBlock[]; // Use PortableTextBlock[] type for content
+  content: PortableTextBlock[];
   author: Author;
+}
+
+interface PostSlug {
+  slug: {
+    current: string;
+  };
+}
+
+// Define the `generateStaticParams` function
+export async function generateStaticParams() {
+  const query = `*[_type == "post" && defined(slug.current)]{ slug }`;
+  const slugs: PostSlug[] = await client.fetch(query);
+
+  const params = slugs.map((post) => ({
+    slug: post.slug.current,
+  }));
+
+  return params;
 }
 
 // Fetch and render a single post based on the slug
@@ -64,7 +82,7 @@ export default async function Page({
         </p>
       </section>
 
-      {/* Author Section (Image & Bio) */}
+      {/* Author Section */}
       <section className="flex items-center gap-6 p-6 bg-gray-50 dark:bg-gray-900 rounded-lg shadow-md">
         <Image
           src={post.author.image ? urlFor(post.author.image).url() : "/default-author.jpg"}
