@@ -4,7 +4,8 @@ import { urlFor } from "@/sanity/lib/image";
 import { PortableText, PortableTextBlock } from "@portabletext/react";
 import Comments from "@/components/Comments";
 
-export const revalidate = 60; // Enable ISR with 60 seconds revalidation
+// Revalidate data every 60 seconds (ISR)
+export const revalidate = 60;
 
 // Define types for fetched data
 interface Author {
@@ -27,23 +28,55 @@ interface PostSlug {
   };
 }
 
-// Function to generate static parameters for ISR
+// Function to generate static parameters
 export async function generateStaticParams() {
   const query = `*[_type == "post" && defined(slug.current)]{ slug }`;
-  const slugs: PostSlug[] = await client.fetch(query);
+  try {
+    const slugs: PostSlug[] = await client.fetch(query);
 
-  if (!slugs || slugs.length === 0) {
-    throw new Error("No valid slugs found for posts.");
+    if (!slugs || slugs.length === 0) {
+      throw new Error("No valid slugs found for posts.");
+    }
+
+    return slugs.map((post) => ({
+      slug: post.slug.current,
+    }));
+  } catch (error) {
+    console.error("Error fetching slugs:", error);
+    return [];
   }
-
-  const params = slugs.map((post) => ({
-    slug: post.slug.current,
-  }));
-
-  return params;
 }
 
-// Fetch and render a single post based on the slug
+// Function to generate metadata
+export async function generateMetadata(
+  { params }: { params: { slug: string } }
+) {
+  const query = `*[_type == 'post' && slug.current == $slug]{
+    title, summary as description, image
+  }[0]`;
+
+  try {
+    const post = await client.fetch(query, { slug: params.slug });
+    if (!post) return {};
+
+    const ogImage = post.image ? urlFor(post.image).url() : undefined;
+
+    return {
+      title: post.title,
+      description: post.description,
+      openGraph: {
+        title: post.title,
+        description: post.description,
+        images: ogImage ? [ogImage] : [],
+      },
+    };
+  } catch (error) {
+    console.error("Error generating metadata:", error);
+    return {};
+  }
+}
+
+// Main page component
 export default async function Page({
   params: { slug },
 }: {
