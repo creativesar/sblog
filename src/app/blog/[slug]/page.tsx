@@ -4,15 +4,15 @@ import { urlFor } from "@/sanity/lib/image";
 import { PortableText } from "@portabletext/react";
 import Comments from "@/components/Comments";
 
-export const revalidate = 60; // ISR with 60 seconds revalidation
-
 // Keep the generateStaticParams for static export
 export async function generateStaticParams() {
-  const query = `*[_type == "post" && defined(slug.current)]{ slug }`;
+  // Querying for all slugs from Sanity to generate static paths
+  const query = `*[_type == "post" && defined(slug.current)]{ "slug": slug.current }`;
   const slugs = await client.fetch(query);
 
-  return slugs.map((post: { slug: { current: string } }) => ({
-    slug: post.slug.current,
+  // Mapping the fetched slugs to return them in the expected format for static export
+  return slugs.map((post: { slug: string }) => ({
+    slug: post.slug,
   }));
 }
 
