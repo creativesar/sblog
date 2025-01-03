@@ -15,9 +15,10 @@ export default function BlogCard({ post }: { post: Post }) {
       <div className="relative max-h-76 flex-1">
         <Image
           src={post.image ? urlFor(post.image).url() : "/placeholder.jpg"}
-          alt={post.title}
+          alt={`Image for ${post.title}`} // Improved alt text for accessibility
           fill
           className="object-cover rounded-t"
+          priority // Preloading featured images for better performance
         />
       </div>
       <div className="flex flex-col justify-between gapx-y-4 p-4">

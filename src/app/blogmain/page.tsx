@@ -1,5 +1,5 @@
-import BlogCard from "@/components/BlogCard";
 import { client } from "@/sanity/lib/client";
+import BlogCard from "@/components/BlogCard";
 
 interface Post {
   summary: string;
@@ -14,14 +14,8 @@ interface Post {
   slug: string;
 }
 
-interface BlogMainProps {
-  posts: Post[];
-}
-
-export const revalidate = 60; // seconds for Incremental Static Regeneration (ISR)
-
 export default async function BlogMain() {
-  // Fetching data directly in the component (server-side)
+  // Fetching data directly within the component (server-side)
   const query = `*[_type=='post'] | order(_createdAt asc){
     summary, 
     title, 
@@ -35,7 +29,7 @@ export default async function BlogMain() {
     "slug": slug.current
   }`;
 
-  const posts: Post[] = await client.fetch<Post[]>(query);
+  const posts: Post[] = await client.fetch(query);
 
   return (
     <main className="flex min-h-screen flex-col">
