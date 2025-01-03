@@ -83,16 +83,16 @@ export default async function page({
       {/* Author Section (Image & Bio) */}
       <section className="flex gap-4 items-center bg-light dark:bg-dark p-6 rounded-lg shadow-lg">
         <Image
-          src={urlForImage(post.author.image)}
+          src={urlForImage(post.author.image) || "/placeholder-author.jpg"} // Fallback image
           width={100}
           height={100}
-          alt={post.author.name}
+          alt={post.author.name || "Author"} // Fallback alt text
           className="object-cover rounded-full shadow-md"
         />
         <div className="flex flex-col">
           <h3 className="text-xl font-bold text-dark dark:text-light">{post.author.name}</h3>
           <p className="italic text-sm text-dark/80 dark:text-light/80">
-            {post.author.bio || "No bio available."}
+            {post.author.bio || "No bio available."} {/* Fallback bio */}
           </p>
         </div>
       </section>
@@ -100,7 +100,7 @@ export default async function page({
       {/* Main Body of Blog */}
       <section className="prose prose-lg text-dark/80 dark:text-light/80 mt-8">
         {post.content ? (
-          <div dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div dangerouslySetInnerHTML={{ __html: post.content }} /> // Rendering content as HTML
         ) : (
           <p>No content available.</p>
         )}
