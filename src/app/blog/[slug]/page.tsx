@@ -6,15 +6,18 @@ import Comments from "@/components/Comments";
 
 // Add this function to fetch all slugs and pass them to the static generation
 export async function generateStaticParams() {
-  // Query to get all slugs from Sanity
-  const query = `*[_type == "post" && defined(slug.current)]{ "slug": slug.current }`;
-  
+  const query = `*[_type=='post']{
+    "slug":slug.current
+  }`;
   const slugs = await client.fetch(query);
-
-  // Return slugs as params for static export
-  return slugs.map((slug: { slug: string }) => ({
-    slug: slug.slug,
-  }));
+  const slugRoutes = slugs.map((item:{slug:string})=>(
+    item.slug
+  ));
+  // console.log(slugRoutes)
+  return slugRoutes.map((slug:string)=>(
+    {slug}
+  ))
+  
 }
 
 // Your page component that fetches the post data
