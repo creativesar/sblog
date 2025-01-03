@@ -16,6 +16,8 @@ export async function generateStaticParams() {
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {
+  console.time(`Request Time for /blog/${params.slug}`); // Start tracking time
+
   const query = `*[_type == 'post' && slug.current == $slug]{
     title, summary, image, content,
     author->{bio, image, name}
@@ -24,12 +26,15 @@ export default async function Page({ params }: { params: { slug: string } }) {
   const post = await client.fetch(query, { slug: params.slug });
 
   if (!post) {
+    console.timeEnd(`Request Time for /blog/${params.slug}`); // End tracking time
     return (
       <div className="text-center text-gray-500">
         Sorry, the requested post could not be found.
       </div>
     );
   }
+
+  console.timeEnd(`Request Time for /blog/${params.slug}`); // End tracking time
 
   return (
     <article className="mt-16 mb-32 px-4 sm:px-8 lg:px-16 flex flex-col gap-y-12">
