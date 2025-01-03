@@ -10,6 +10,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'pagedone.io',
       },
+      {
+        protocol: 'https',
+        hostname: 'readymadeui.com', // Add this line
+      },
     ],
   },
 };

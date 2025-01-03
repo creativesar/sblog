@@ -9,6 +9,7 @@ import { IoClose } from 'react-icons/io5';
 
 const links = [
   { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
   { name: "Blog", href: "/blogmain" },
   { name: "Contact", href: "/contact" },
 ];
