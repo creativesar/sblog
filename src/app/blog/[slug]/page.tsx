@@ -28,7 +28,7 @@ interface PostSlug {
 }
 
 // Function to generate static parameters for ISR
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<{ params: { slug: string }[] }> {
   const query = `*[_type == "post" && defined(slug.current)] { slug }`;
   const slugs: PostSlug[] = await client.fetch(query);
 
@@ -36,9 +36,9 @@ export async function generateStaticParams() {
     throw new Error("No valid slugs found for posts.");
   }
 
-  const params = slugs.map((post) => ({
+  return { params: slugs.map((post) => ({
     slug: post.slug.current,
-  }));
+  })) };
 
   return params;
 }
