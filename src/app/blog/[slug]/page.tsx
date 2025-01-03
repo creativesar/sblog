@@ -4,13 +4,6 @@ import { urlFor } from "@/sanity/lib/image";
 import { PortableText } from "@portabletext/react";
 import Comments from "@/components/Comments";
 
-// Type Definitions
-interface Author {
-  bio: string;
-  image: string;
-  name: string;
-}
-
 export const revalidate = 60; // ISR with 60 seconds revalidation
 
 export async function generateStaticParams() {
