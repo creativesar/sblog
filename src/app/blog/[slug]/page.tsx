@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
-import { PortableText } from "@portabletext/react";
+import { PortableText, PortableTextBlock } from "@portabletext/react"; // Import the type for PortableText content
 import Comments from "@/components/Comments";
 
 export const revalidate = 60; // seconds
@@ -17,7 +17,7 @@ interface Post {
   title: string;
   summary: string;
   image: string;
-  content: any; // Replace with specific type if you know the structure of the PortableText content
+  content: PortableTextBlock[]; // Use PortableTextBlock[] type for content
   author: Author;
 }
 
@@ -31,7 +31,7 @@ export async function generateStaticParams() {
     "slug": slug.current
   }`;
 
-  const slugs: Slug[] = await client.fetch(query); // Ensure the fetched data matches the Slug type
+  const slugs: Slug[] = await client.fetch(query);
 
   if (!slugs || slugs.length === 0) {
     console.warn("No slugs found.");
