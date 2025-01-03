@@ -3,34 +3,45 @@ import { urlFor } from "@/sanity/lib/image";
 import { PortableText } from "@portabletext/react";
 import Image from "next/image";
 import Comments from "@/components/Comments";
+import { groq } from "next-sanity"; // Ensure you import groq
 
 // Add this function to fetch all slugs and pass them to the static generation
 export async function generateStaticParams() {
-  const query = `*[_type=='post']{
-    "slug":slug.current
+  const query = groq`*[_type == "post"]{
+    "slug": slug.current
   }`;
   const slugs = await client.fetch(query);
-  const slugRoutes = slugs.map((item:{slug:string})=>(
-    item.slug
-  ));
-  // console.log(slugRoutes)
-  return slugRoutes.map((slug:string)=>(
-    {slug}
-  ))
-  
+
+  return slugs.map((slug: { slug: string }) => ({
+    slug,
+  }));
 }
 
-// Your page component that fetches the post data
-export default async function PostPage({ params }: { params: { slug: string } }) {
-  const query = `*[_type == 'post' && slug.current == $slug]{
-    title, summary, image, content,
-    author->{bio, image, name}
-  }[0]`;
+type Props = {
+  params: {
+    slug: string;
+  };
+};
 
-  const post = await client.fetch(query, { slug: params.slug });
+const SlugPage = async ({ params: { slug } }: Props) => {
+  const query = groq`
+    *[_type == "post" && slug.current == $slug][0]{
+      title,
+      summary,
+      image,
+      content,
+      author->{
+        bio,
+        image,
+        name
+      }
+    }
+  `;
+
+  const post = await client.fetch(query, { slug });
 
   if (!post) {
-    return <div className="text-center text-gray-500">Sorry, the requested post could not be found.</div>;
+    return <p>Post not found</p>;
   }
 
   return (
@@ -41,15 +52,16 @@ export default async function PostPage({ params }: { params: { slug: string } })
       <div className="relative w-full h-72 sm:h-96 lg:h-[500px] mb-12 shadow-md rounded-lg overflow-hidden">
         <Image
           src={post.image ? urlFor(post.image).url() : "/fallback-image.jpg"}
-          layout="fill"
-          objectFit="cover"
+          fill
           alt={post.title}
           className="hover:scale-105 transition-transform duration-500 ease-in-out"
         />
       </div>
       <section className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-md">
         <h2 className="text-2xl font-semibold text-accentDarkPrimary mb-4">Summary</h2>
-        <p className="text-lg leading-relaxed text-justify text-dark/80 dark:text-light/80">{post.summary}</p>
+        <p className="text-lg leading-relaxed text-justify text-dark/80 dark:text-light/80">
+          {post.summary}
+        </p>
       </section>
       <section className="flex items-center gap-6 p-6 bg-gray-50 dark:bg-gray-900 rounded-lg shadow-md">
         <Image
@@ -72,4 +84,6 @@ export default async function PostPage({ params }: { params: { slug: string } })
       </section>
     </article>
   );
-}
+};
+
+export default SlugPage;
