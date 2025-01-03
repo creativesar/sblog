@@ -21,10 +21,6 @@ interface Post {
   author: Author;
 }
 
-interface Slug {
-  slug: string;
-}
-
 // Fetch slugs for static paths generation
 export async function generateStaticParams() {
   const query = `*[_type=='post']{
@@ -37,8 +33,7 @@ export async function generateStaticParams() {
   // console.log(slugRoutes)
   return slugRoutes.map((slug:string)=>(
     {slug}
-  ))
-  
+  ));
 }
 
 // Fetch and render a single post based on the slug
