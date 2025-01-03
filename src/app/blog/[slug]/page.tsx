@@ -1,114 +1,111 @@
 import Image from "next/image";
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
+import { PortableText } from "@portabletext/react";
 import Comments from "@/components/Comments";
 
 export const revalidate = 60; // seconds
 
-// Define the type for the slug
+// Define types for fetched data
+interface Author {
+  bio: string;
+  image: string;
+  name: string;
+}
+
+interface Post {
+  title: string;
+  summary: string;
+  image: string;
+  content: any; // Replace with specific type if you know the structure of the PortableText content
+  author: Author;
+}
+
 interface Slug {
   slug: string;
 }
 
 // Fetch slugs for static paths generation
-export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  const query = `*[_type=='post']{
-    "slug":slug.current
+export async function generateStaticParams() {
+  const query = `*[_type == 'post']{
+    "slug": slug.current
   }`;
-  const slugs: Slug[] = await client.fetch(query);
+
+  const slugs: Slug[] = await client.fetch(query); // Ensure the fetched data matches the Slug type
+
+  if (!slugs || slugs.length === 0) {
+    console.warn("No slugs found.");
+    return [];
+  }
+
   return slugs.map((item) => ({ slug: item.slug }));
 }
 
-// Define Post interface for strong typing
-interface Post {
-  title: string;
-  summary: string;
-  image?: string;
-  content: string; // Changed from PortableTextBlock[] to string
-  author: {
-    bio?: string;
-    image?: string;
-    name: string;
-  };
-}
-
-export default async function page({
-  params,
+// Fetch and render a single post based on the slug
+export default async function Page({
+  params: { slug },
 }: {
   params: { slug: string };
-}): Promise<JSX.Element> {
-  // Fetch the post based on the slug
-  const query = `*[_type=='post' && slug.current=="${params.slug}"]{
+}) {
+  const query = `*[_type == 'post' && slug.current == $slug]{
     title, summary, image, content,
     author->{bio, image, name}
   }[0]`;
-  const post: Post | null = await client.fetch<Post | null>(query);
+
+  const post: Post | null = await client.fetch(query, { slug });
 
   if (!post) {
-    return <div className="text-center mt-12">Post not found.</div>;
-  }
-
-  // Helper function to resolve image URLs
-  function urlForImage(image?: string): string {
-    return image ? urlFor(image).url() : "/placeholder.jpg";
+    return <div className="text-center text-gray-500">Post not found</div>;
   }
 
   return (
-    <article className="mt-12 mb-24 px-4 lg:px-24 flex flex-col gap-y-12">
+    <article className="mt-16 mb-32 px-4 sm:px-8 lg:px-16 flex flex-col gap-y-12">
       {/* Blog Title */}
-      <h1 className="text-3xl lg:text-6xl font-bold text-center text-dark dark:text-light">
+      <h1 className="text-3xl sm:text-4xl lg:text-6xl font-extrabold text-dark dark:text-light text-center">
         {post.title}
       </h1>
 
       {/* Featured Image */}
-      <div className="relative w-full h-64 sm:h-80 md:h-96 mb-8">
+      <div className="relative w-full h-72 sm:h-96 lg:h-[500px] mb-12 shadow-md rounded-lg overflow-hidden">
         <Image
-          src={urlForImage(post.image)}
+          src={post.image ? urlFor(post.image).url() : "/fallback-image.jpg"}
+          layout="fill"
+          objectFit="cover"
           alt={post.title}
-          fill
-          className="object-cover rounded-lg shadow-lg"
+          className="hover:scale-105 transition-transform duration-500 ease-in-out"
         />
       </div>
 
       {/* Blog Summary Section */}
-      <section className="bg-light dark:bg-dark p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold uppercase text-accentDarkPrimary mb-4">
-          Summary
-        </h2>
-        <p className="text-base leading-relaxed text-justify text-dark/80 dark:text-light/80">
-          {post.summary || "No summary available."}
+      <section className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow-md">
+        <h2 className="text-2xl font-semibold text-accentDarkPrimary mb-4">Summary</h2>
+        <p className="text-lg leading-relaxed text-justify text-dark/80 dark:text-light/80">
+          {post.summary}
         </p>
       </section>
 
       {/* Author Section (Image & Bio) */}
-      <section className="flex gap-4 items-center bg-light dark:bg-dark p-6 rounded-lg shadow-lg">
+      <section className="flex items-center gap-6 p-6 bg-gray-50 dark:bg-gray-900 rounded-lg shadow-md">
         <Image
-          src={urlForImage(post.author.image) || "/placeholder-author.jpg"} // Fallback image
-          width={100}
-          height={100}
-          alt={post.author.name || "Author"} // Fallback alt text
-          className="object-cover rounded-full shadow-md"
+          src={post.author.image ? urlFor(post.author.image).url() : "/default-author.jpg"}
+          width={80}
+          height={80}
+          alt={post.author.name}
+          className="object-cover rounded-full border-4 border-accentDarkPrimary"
         />
-        <div className="flex flex-col">
+        <div>
           <h3 className="text-xl font-bold text-dark dark:text-light">{post.author.name}</h3>
-          <p className="italic text-sm text-dark/80 dark:text-light/80">
-            {post.author.bio || "No bio available."} {/* Fallback bio */}
-          </p>
+          <p className="italic text-sm text-dark/70 dark:text-light/70">{post.author.bio}</p>
         </div>
       </section>
 
       {/* Main Body of Blog */}
-      <section className="prose prose-lg text-dark/80 dark:text-light/80 mt-8">
-        {post.content ? (
-          <div dangerouslySetInnerHTML={{ __html: post.content }} /> // Rendering content as HTML
-        ) : (
-          <p>No content available.</p>
-        )}
+      <section className="prose prose-lg prose-accentDarkPrimary max-w-none text-dark dark:text-light">
+        <PortableText value={post.content} />
       </section>
 
       {/* Comments Section */}
-      <section className="mt-12 bg-light dark:bg-dark p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-dark dark:text-light">Comments</h2>
+      <section className="mt-12">
         <Comments />
       </section>
     </article>
