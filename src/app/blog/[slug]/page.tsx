@@ -21,11 +21,11 @@ export async function generateStaticParams() {
 interface Post {
   title: string;
   summary: string;
-  image: string;
-  content: PortableTextBlock[]; // Use appropriate type for PortableText
+  image?: string;
+  content: PortableTextBlock[];
   author: {
-    bio: string;
-    image: string;
+    bio?: string;
+    image?: string;
     name: string;
   };
 }
@@ -36,10 +36,14 @@ export default async function page({ params: { slug } }: { params: { slug: strin
     title, summary, image, content,
     author->{bio, image, name}
   }[0]`;
-  const post: Post = await client.fetch<Post>(query);
+  const post: Post | null = await client.fetch<Post | null>(query);
+
+  if (!post) {
+    return <div className="text-center mt-12">Post not found.</div>;
+  }
 
   // Helper function to resolve image URLs
-  function urlForImage(image: string): string {
+  function urlForImage(image?: string): string {
     return image ? urlFor(image).url() : "/placeholder.jpg";
   }
 
@@ -66,7 +70,7 @@ export default async function page({ params: { slug } }: { params: { slug: strin
           Summary
         </h2>
         <p className="text-base leading-relaxed text-justify text-dark/80 dark:text-light/80">
-          {post.summary}
+          {post.summary || "No summary available."}
         </p>
       </section>
 
@@ -82,14 +86,18 @@ export default async function page({ params: { slug } }: { params: { slug: strin
         <div className="flex flex-col">
           <h3 className="text-xl font-bold text-dark dark:text-light">{post.author.name}</h3>
           <p className="italic text-sm text-dark/80 dark:text-light/80">
-            {post.author.bio}
+            {post.author.bio || "No bio available."}
           </p>
         </div>
       </section>
 
       {/* Main Body of Blog */}
       <section className="prose prose-lg text-dark/80 dark:text-light/80 mt-8">
-        <PortableText value={post.content} components={components} />
+        {post.content ? (
+          <PortableText value={post.content} components={components} />
+        ) : (
+          <p>No content available.</p>
+        )}
       </section>
 
       {/* Comments Section */}
