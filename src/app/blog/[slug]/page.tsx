@@ -27,9 +27,9 @@ interface PostSlug {
   };
 }
 
-// Define the `generateStaticParams` function
+// Function to generate static parameters for ISR
 export async function generateStaticParams() {
-  const query = `*[_type == "post" && defined(slug.current)]{ slug }`;
+  const query = `*[_type == "post" && defined(slug.current)] { slug }`;
   const slugs: PostSlug[] = await client.fetch(query);
 
   if (!slugs || slugs.length === 0) {
