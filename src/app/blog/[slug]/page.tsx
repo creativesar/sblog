@@ -21,21 +21,6 @@ interface Post {
   author: Author;
 }
 
-// Fetch slugs for static paths generation
-export async function generateStaticParams() {
-  const query = `*[_type=='post']{
-    "slug":slug.current
-  }`;
-  const slugs = await client.fetch(query);
-  const slugRoutes = slugs.map((item:{slug:string})=>(
-    item.slug
-  ));
-  // console.log(slugRoutes)
-  return slugRoutes.map((slug:string)=>(
-    {slug}
-  ));
-}
-
 // Fetch and render a single post based on the slug
 export default async function Page({
   params: { slug },
