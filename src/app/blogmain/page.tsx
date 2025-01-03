@@ -4,7 +4,6 @@ import { client } from "@/sanity/lib/client";
 export const revalidate = 60; // seconds
 
 export default async function BlogMain() {
-  // Query to fetch posts from Sanity
   const query = `*[_type=='post'] | order(_createdAt asc){
     summary, 
     title, 
@@ -18,7 +17,6 @@ export default async function BlogMain() {
     "slug": slug.current
   }`;
 
-  // Define the Post interface for TypeScript
   interface Post {
     summary: string;
     title: string;
@@ -32,10 +30,8 @@ export default async function BlogMain() {
     slug: string;
   }
 
-  // Fetch posts from Sanity and type the response
   const posts: Post[] = await client.fetch<Post[]>(query);
 
-  // Return the main component
   return (
     <main className="flex min-h-screen flex-col">
       <h1 className="text-2xl font-bold uppercase my-12 text-center text-dark dark:text-light sm:text-3xl lg:text-5xl">
