@@ -6,6 +6,16 @@ import Comments from "@/components/Comments";
 
 export const revalidate = 60; // ISR with 60 seconds revalidation
 
+// Keep the generateStaticParams for static export
+export async function generateStaticParams() {
+  const query = `*[_type == "post" && defined(slug.current)]{ slug }`;
+  const slugs = await client.fetch(query);
+
+  return slugs.map((post: { slug: { current: string } }) => ({
+    slug: post.slug.current,
+  }));
+}
+
 export default async function Page({ params }: { params: { slug: string } }) {
   console.time(`Request Time for /blog/${params.slug}`); // Start tracking time
 
