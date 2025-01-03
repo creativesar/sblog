@@ -27,18 +27,18 @@ interface Slug {
 
 // Fetch slugs for static paths generation
 export async function generateStaticParams() {
-  const query = `*[_type == 'post']{
-    "slug": slug.current
+  const query = `*[_type=='post']{
+    "slug":slug.current
   }`;
-
-  const slugs: Slug[] = await client.fetch(query);
-
-  if (!slugs || slugs.length === 0) {
-    console.warn("No slugs found.");
-    return [];
-  }
-
-  return slugs.map((item) => ({ slug: item.slug }));
+  const slugs = await client.fetch(query);
+  const slugRoutes = slugs.map((item:{slug:string})=>(
+    item.slug
+  ));
+  // console.log(slugRoutes)
+  return slugRoutes.map((slug:string)=>(
+    {slug}
+  ))
+  
 }
 
 // Fetch and render a single post based on the slug
